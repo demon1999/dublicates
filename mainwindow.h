@@ -18,7 +18,7 @@ public:
 
 private slots:
     void select_directory();
-    void scan_directory(QString const& dir);
+    void scan_directory(QString const& dir, bool is_first);
     void show_about_dialog();
 
 private:

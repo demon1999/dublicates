@@ -27,7 +27,7 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
 
-    scan_directory(QDir::homePath());
+    scan_directory(QDir::homePath(), true);
 }
 
 main_window::~main_window()
@@ -38,21 +38,36 @@ void main_window::select_directory()
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
-    scan_directory(dir);
+    scan_directory(dir, true);
 }
 
-void main_window::scan_directory(QString const& dir)
+void main_window::scan_directory(QString const& dir, bool is_first)
 {
-    ui->treeWidget->clear();
-    setWindowTitle(QString("Directory Content - %1").arg(dir));
+    if (is_first) {
+        ui->treeWidget->clear();
+        setWindowTitle(QString("Directory Content - %1").arg(dir));
+    }
     QDir d(dir);
-    QFileInfoList list = d.entryInfoList();
+    /*if (!is_first) {
+        QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
+        item->setText(0, d.absolutePath());
+        item->setText(1, QString::number(1));
+        ui->treeWidget->addTopLevelItem(item);
+        return;
+    }*/
+
+    QFileInfoList list = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+
     for (QFileInfo file_info : list)
     {
-        QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
-        item->setText(0, file_info.fileName());
-        item->setText(1, QString::number(file_info.size()));
-        ui->treeWidget->addTopLevelItem(item);
+        if (file_info.isDir()) {
+            scan_directory(file_info.absoluteFilePath(), false);
+        } else {
+            QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
+            item->setText(0, file_info.absoluteFilePath());
+            item->setText(1, QString::number(file_info.size()));
+            ui->treeWidget->addTopLevelItem(item);
+        }
     }
 }
 
