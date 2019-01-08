@@ -62,14 +62,16 @@ void main_window::scan_directory(QString const& dir, bool is_first, QMap<QString
     {
         if (file_info.isDir()) {
             //continue;
-            scan_directory(file_info.absoluteFilePath(), false, data);
+            if (QDir(file_info.absoluteFilePath()).isReadable())
+                scan_directory(file_info.absoluteFilePath(), false, data);
         } else {
             QCryptographicHash hs(QCryptographicHash::Algorithm::Sha256);
             //hs.addData(file_info.absoluteFilePath().toStdString().c_str(), file_info.absoluteFilePath().size());
             QFile file(file_info.absoluteFilePath());
             if(!file.open(QIODevice::ReadOnly)) {
                 //file.setErrorString(QString("You're Fucking mothers son!"));
-                QMessageBox::information(0, "error", "You're fucking mother's son!");
+                //QMessageBox::information(0, "error", "You're fucking mother's son!");
+                continue;
             }
 
             QTextStream in(&file);
@@ -90,7 +92,7 @@ void main_window::scan_directory(QString const& dir, bool is_first, QMap<QString
             for (auto eq_files : v) {
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
                 item->setText(0, eq_files);
-                item->setText(1, "Type: " + QString::number(QFile(eq_files).size()));
+                item->setText(1, "Type: " + QString::number(number_of_types) + ", size: "+ QString::number(QFile(eq_files).size()));
                 ui->treeWidget->addTopLevelItem(item);
             }
             number_of_types++;
