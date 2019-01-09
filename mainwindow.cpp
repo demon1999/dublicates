@@ -21,10 +21,12 @@ main_window::main_window(QWidget *parent)
 {
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
-
+    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 
+    //connect(ui->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(prepare_menu(const QPoint &)));
+    connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &main_window::prepare_menu);
     QCommonStyle style;
     ui->actionScan_Directory->setIcon(style.standardIcon(QCommonStyle::SP_DialogOpenButton));
     ui->actionPrev_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowLeft));
@@ -44,19 +46,89 @@ main_window::main_window(QWidget *parent)
 main_window::~main_window()
 {}
 
-void main_window::show_next_dublicates() {
+void main_window::prepare_menu(const QPoint & pos) {
+    QTreeWidget *tree = ui->treeWidget;
+
+    QTreeWidgetItem *current_item = tree->itemAt( pos );
+    QAction *delete_action = new QAction(QIcon(":/Resource/warning32.ico"), tr("&Delete"), this);
+
+    connect(delete_action, &QAction::triggered, this, [current_item, this]() {
+                delete_element(current_item);});
+
+
+    QMenu menu(this);
+    menu.addAction(delete_action);
+
+    QPoint pt(pos);
+    menu.exec( tree->mapToGlobal(pos) );
+}
+
+void main_window::try_to_show(std::function<void()> change) {
+    if (data.empty()) {
+        current = data.begin();
+        show_current();
+        return;
+    }
+    auto& v = *current;
+    QVector<QString> new_arr(0);
+    for (auto path : v) {
+        if (QFile(path).exists())
+            new_arr.append(path);
+    }
+    v = new_arr;
+    if (v.size() > 0) {
+        show_current();
+    } else {
+        auto it = current;
+        it++;
+        if (it == data.end()) {
+            data.clear();
+            current = data.begin();
+            show_current();
+            return;
+        }
+        it--;
+        change();
+        data.erase(it);
+    }
+}
+
+void main_window::delete_element(QTreeWidgetItem *deleted) {
+    QString path = deleted->text(0);
+    QString SHA256 = sha256[path];
+    if (!QFile(path).exists()) {
+        QMessageBox::information(0, "error", "File doesn't exist.");
+    } else
+    if (QFile(path).remove()) {
+        sha256.erase(sha256.find(path));
+        try_to_show([this](){return this->pluss();});
+    } else {
+        QMessageBox::information(0, "error", "Can't be deleted.");
+        return;
+    }
+}
+
+void main_window::pluss() {
     current++;
     if (current == data.end())
         current = data.begin();
-    show_current();
+}
+
+void main_window::minuss() {
+    if (current == data.begin())
+        current = data.end();
+    current--;
+}
+
+void main_window::show_next_dublicates() {
+    pluss();
+    try_to_show([this](){return this->pluss();});
 }
 
 void main_window::show_prev_dublicates() {
     if (data.empty()) return;
-    if (current == data.begin())
-        current = data.end();
-    current--;
-    show_current();
+    minuss();
+    try_to_show([this](){return this->minuss();});
 }
 
 void main_window::select_directory()
@@ -99,7 +171,11 @@ void main_window::scan_directory(QString const& dir, bool is_first)
             }
 
             file.close();
-            data[QString(hs.result().toHex())].append(file_info.absoluteFilePath());
+
+            QString SHA256 = QString(hs.result().toHex());
+
+            sha256[file_info.absoluteFilePath()] = SHA256;
+            data[SHA256].append(file_info.absoluteFilePath());
 
         }
     }
