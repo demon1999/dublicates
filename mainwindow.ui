@@ -87,6 +87,40 @@
    </attribute>
    <addaction name="actionScan_Directory"/>
   </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionPrev_Group_Of_Dublicates"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNext_Group_Of_Dublicates"/>
+  </widget>
+  <action name="actionNext_Group_Of_Dublicates">
+   <property name="text">
+    <string>&amp;Next</string>
+   </property>
+  </action>
+  <action name="actionPrev_Group_Of_Dublicates">
+   <property name="text">
+    <string>&amp;Prev</string>
+   </property>
+  </action>
   <action name="actionScan_Directory">
    <property name="text">
     <string>&amp;Scan Directory...</string>

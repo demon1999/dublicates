@@ -27,31 +27,50 @@ main_window::main_window(QWidget *parent)
 
     QCommonStyle style;
     ui->actionScan_Directory->setIcon(style.standardIcon(QCommonStyle::SP_DialogOpenButton));
+    ui->actionPrev_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowLeft));
+    ui->actionNext_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowRight));
     ui->actionExit->setIcon(style.standardIcon(QCommonStyle::SP_DialogCloseButton));
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
 
+    connect(ui->actionPrev_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_prev_dublicates);
+    connect(ui->actionNext_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_next_dublicates);
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
-    QMap<QString, QVector<QString>> data;
-    scan_directory(QDir::currentPath(), true, data);
+
+    scan_directory(QDir::currentPath(), true);
 }
 
 main_window::~main_window()
 {}
 
+void main_window::show_next_dublicates() {
+    current++;
+    if (current == data.end())
+        current = data.begin();
+    show_current();
+}
+
+void main_window::show_prev_dublicates() {
+    if (data.empty()) return;
+    if (current == data.begin())
+        current = data.end();
+    current--;
+    show_current();
+}
+
 void main_window::select_directory()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    QMap<QString, QVector<QString>> data;
-    scan_directory(dir, true, data);
+    scan_directory(dir, true);
 }
 
-void main_window::scan_directory(QString const& dir, bool is_first, QMap<QString, QVector<QString> >& data)
+void main_window::scan_directory(QString const& dir, bool is_first)
 {
     if (is_first) {
         ui->treeWidget->clear();
+        data.clear();
         setWindowTitle(QString("Directory Content - %1").arg(dir));
     }
     QDir d(dir);
@@ -61,12 +80,10 @@ void main_window::scan_directory(QString const& dir, bool is_first, QMap<QString
     for (QFileInfo file_info : list)
     {
         if (file_info.isDir()) {
-            //continue;
             if (QDir(file_info.absoluteFilePath()).isReadable())
-                scan_directory(file_info.absoluteFilePath(), false, data);
+                scan_directory(file_info.absoluteFilePath(), false);
         } else {
             QCryptographicHash hs(QCryptographicHash::Algorithm::Sha256);
-            //hs.addData(file_info.absoluteFilePath().toStdString().c_str(), file_info.absoluteFilePath().size());
             QFile file(file_info.absoluteFilePath());
             if(!file.open(QIODevice::ReadOnly)) {
                 //file.setErrorString(QString("You're Fucking mothers son!"));
@@ -87,16 +104,25 @@ void main_window::scan_directory(QString const& dir, bool is_first, QMap<QString
         }
     }
     if (is_first == true) {
-        int number_of_types = 0;
-        for (auto v : data) {
-            for (auto eq_files : v) {
-                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
-                item->setText(0, eq_files);
-                item->setText(1, "Type: " + QString::number(number_of_types) + ", size: "+ QString::number(QFile(eq_files).size()));
-                ui->treeWidget->addTopLevelItem(item);
-            }
-            number_of_types++;
-        }
+        current = data.begin();
+        show_current();
+    }
+}
+
+void main_window::show_current() {
+    QString title = QWidget::windowTitle();
+    ui->treeWidget->clear();
+    setWindowTitle(QString("Directory Content - %1").arg(title));
+
+    if (current == data.end()) {
+        return;
+    }
+    auto v = *current;
+    for (auto eq_files : v) {
+        QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidget);
+        item->setText(0, eq_files);
+        item->setText(1, QString::number(QFile(eq_files).size()));
+        ui->treeWidget->addTopLevelItem(item);
     }
 }
 
