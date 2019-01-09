@@ -40,7 +40,7 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
 
-    scan_directory(QDir::currentPath(), true);
+    scan_directory(QString("/home/demon1999/code/cpp-course/dublicates/for_test"), true);
 }
 
 main_window::~main_window()
@@ -81,7 +81,7 @@ void main_window::try_to_show(std::function<void()> change) {
     } else {
         auto it = current;
         it++;
-        if (it == data.end()) {
+        if (it == data.end() && current == data.begin()) {
             data.clear();
             current = data.begin();
             show_current();
