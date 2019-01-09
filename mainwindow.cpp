@@ -102,11 +102,10 @@ void main_window::delete_element(QTreeWidgetItem *deleted) {
     } else
     if (QFile(path).remove()) {
         sha256.erase(sha256.find(path));
-        try_to_show([this](){return this->pluss();});
     } else {
         QMessageBox::information(0, "error", "Can't be deleted.");
-        return;
     }
+    try_to_show([this](){return this->pluss();});
 }
 
 void main_window::pluss() {
@@ -182,7 +181,7 @@ void main_window::scan_directory(QString const& dir, bool is_first)
     }
     if (is_first == true) {
         current = data.begin();
-        try_to_show();
+        try_to_show([this](){return this->pluss();});
     }
 }
 
