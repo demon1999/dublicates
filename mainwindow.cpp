@@ -76,7 +76,7 @@ void main_window::try_to_show(std::function<void()> change) {
             new_arr.append(path);
     }
     v = new_arr;
-    if (v.size() > 0) {
+    if (v.size() > 1) {
         show_current();
     } else {
         auto it = current;
@@ -90,6 +90,7 @@ void main_window::try_to_show(std::function<void()> change) {
         it--;
         change();
         data.erase(it);
+        try_to_show(change);
     }
 }
 
