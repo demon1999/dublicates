@@ -182,7 +182,7 @@ void main_window::scan_directory(QString const& dir, bool is_first)
     }
     if (is_first == true) {
         current = data.begin();
-        show_current();
+        try_to_show();
     }
 }
 
