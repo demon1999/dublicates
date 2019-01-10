@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "scanner.h"
 
 #include <QMap>
 #include <QVector>
@@ -14,6 +15,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QThread>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent)
@@ -24,7 +26,7 @@ main_window::main_window(QWidget *parent)
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-
+    thread = new QThread;
     //connect(ui->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(prepare_menu(const QPoint &)));
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &main_window::prepare_menu);
     QCommonStyle style;
@@ -140,55 +142,42 @@ void main_window::select_directory()
 
 void main_window::scan_directory(QString const& dir, bool is_first)
 {
-    if (is_first) {
-        ui->treeWidget->clear();
-        data.clear();
-        setWindowTitle(QString("Directory Content - %1").arg(dir));
-    }
+    if (thread->isRunning()) {
+        //TODO
+
+    };
+
     QDir d(dir);
 
-    QFileInfoList list = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
-
-    for (QFileInfo file_info : list)
-    {
-        if (file_info.isDir()) {
-            if (QDir(file_info.absoluteFilePath()).isReadable())
-                scan_directory(file_info.absoluteFilePath(), false);
-        } else {
-            QCryptographicHash hs(QCryptographicHash::Algorithm::Sha256);
-            QFile file(file_info.absoluteFilePath());
-            if(!file.open(QIODevice::ReadOnly)) {
-                //file.setErrorString(QString("You're Fucking mothers son!"));
-                //QMessageBox::information(0, "error", "You're fucking mother's son!");
-                continue;
-            }
-
-            QTextStream in(&file);
-
-            while(!in.atEnd()) {
-                QString line = in.readLine();
-                hs.addData(line.toStdString().c_str());
-            }
-
-            file.close();
-
-            QString SHA256 = QString(hs.result().toHex());
-
-            sha256[file_info.absoluteFilePath()] = SHA256;
-            data[SHA256].append(file_info.absoluteFilePath());
-
-        }
-    }
-    if (is_first == true) {
-        current = data.begin();
-        try_to_show([this](){return this->pluss();});
-    }
+    scanner* scan = new scanner(dir);
+    scan->moveToThread(thread);
+    connect(thread, SIGNAL(started()), scan, SLOT(run()));
+    connect(scan, SIGNAL(finished()), thread, SLOT(quit()));
+    //connect(this, SIGNAL(stopAll()), scan, SLOT(stop()));
+    qRegisterMetaType<QMap<QString, QVector<QString> > >("QMap<QString, QVector<QString> >");
+    qRegisterMetaType<QMap<QString, QString> >("QMap<QString, QString>");
+    connect(scan, SIGNAL(done(const QMap<QString, QVector<QString> > &,
+                              const QMap<QString, QString> &,
+                              const QString&)), this,
+                  SLOT(make_window(const QMap<QString, QVector<QString> > &, const QMap<QString, QString> &, const QString&)));
+    //connect(scan, SIGNAL(finished()), scan, SLOT(deleteLater()));
+    //connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    thread->start();
 }
 
+void main_window::make_window(const QMap<QString, QVector<QString> >  &_data,
+                              const QMap<QString, QString> &_sha256, const QString &_dir) {
+    ui->treeWidget->clear();
+    setWindowTitle(QString("Directory Content - %1").arg(_dir));
+    data = _data;
+    sha256 = _sha256;
+    current = data.begin();
+    try_to_show([this](){return this->pluss();});
+}
 void main_window::show_current() {
     QString title = QWidget::windowTitle();
     ui->treeWidget->clear();
-    setWindowTitle(QString("Directory Content - %1").arg(title));
+    setWindowTitle(title);
 
     if (current == data.end()) {
         return;

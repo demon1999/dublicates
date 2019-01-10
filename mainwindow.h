@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTreeWidgetItem>
 #include <QMap>
+#include <QThread>
 #include <QString>
 #include <QVector>
 #include <functional>
@@ -30,12 +31,14 @@ private slots:
     void show_prev_dublicates();
     void scan_directory(QString const& dir, bool is_first);
     void show_about_dialog();
-
+    void make_window(const QMap<QString, QVector<QString> >  &_data,
+                     const QMap<QString, QString> &_sha256, const QString &_dir);
 private:
     void pluss();
     void minuss();
     void try_to_show(std::function<void()>);
     void show_current();
+    QThread* thread;
     QMap<QString, QVector<QString> >::iterator current;
     QMap<QString, QVector<QString> > data;
     QMap<QString, QString> sha256;
