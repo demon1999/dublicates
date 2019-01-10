@@ -8,28 +8,27 @@
 
 scanner::scanner(const QString &dir_name) {
     dir = dir_name;
-}
-
-void scanner::stop() {
-
+    flag = false;
 }
 
 void scanner::run() {
     data.clear();
     sha256.clear();
     get_data(dir);
-    emit done(data, sha256, dir);
+    if (flag == false)
+        emit done(data, sha256, dir);
     emit finished();
 }
 
 void scanner::get_data(const QString &dir) {
-
+    if (flag) return;
     QDir d(dir);
 
     QFileInfoList list = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
 
     for (QFileInfo file_info : list)
     {
+        if (flag) return;
         if (file_info.isDir()) {
             if (QDir(file_info.absoluteFilePath()).isReadable())
                 get_data(file_info.absoluteFilePath());
@@ -63,4 +62,8 @@ QMap<QString, QString> scanner::get_sha256() {
 }
 QMap<QString, QVector<QString> > scanner::get_map_data() {
     return data;
+}
+
+void scanner::set_flag() {
+    flag = true;
 }

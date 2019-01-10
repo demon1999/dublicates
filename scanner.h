@@ -10,15 +10,16 @@ class scanner : public QObject
         Q_OBJECT
 
 private:
+    volatile bool flag;
     QString dir;
     QMap<QString, QVector<QString> > data;
     QMap<QString, QString> sha256;
     void get_data(const QString &dir);
 public:
     scanner(const QString &dir_name);
+    void set_flag();
 public slots:
     void run();
-    void stop();
     QMap<QString, QString> get_sha256();
     QMap<QString, QVector<QString> > get_map_data();
 signals:

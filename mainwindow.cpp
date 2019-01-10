@@ -35,7 +35,8 @@ main_window::main_window(QWidget *parent)
     ui->actionNext_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowRight));
     ui->actionExit->setIcon(style.standardIcon(QCommonStyle::SP_DialogCloseButton));
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
-
+    //ui->actionStop->setIcon(style.standardIcon(QCommonStyle::SP_);
+    connect(ui->actionStop, &QAction::triggered, this, &main_window::stop_scanning);
     connect(ui->actionPrev_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_prev_dublicates);
     connect(ui->actionNext_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_next_dublicates);
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
@@ -140,16 +141,22 @@ void main_window::select_directory()
     scan_directory(dir, true);
 }
 
+void main_window::stop_scanning() {
+    if (scan == NULL)
+        return;
+    scan->set_flag();
+}
+
 void main_window::scan_directory(QString const& dir, bool is_first)
 {
     if (thread->isRunning()) {
-        //TODO
-
+        QMessageBox::information(0, "info", "You can't start new scanning, before previous one has finished.");
+        return;
     };
 
     QDir d(dir);
 
-    scanner* scan = new scanner(dir);
+    scan = new scanner(dir);
     scan->moveToThread(thread);
     connect(thread, SIGNAL(started()), scan, SLOT(run()));
     connect(scan, SIGNAL(finished()), thread, SLOT(quit()));
@@ -160,8 +167,6 @@ void main_window::scan_directory(QString const& dir, bool is_first)
                               const QMap<QString, QString> &,
                               const QString&)), this,
                   SLOT(make_window(const QMap<QString, QVector<QString> > &, const QMap<QString, QString> &, const QString&)));
-    //connect(scan, SIGNAL(finished()), scan, SLOT(deleteLater()));
-    //connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }
 

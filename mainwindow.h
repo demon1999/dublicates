@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <iterator>
+#include "scanner.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +25,7 @@ public:
     ~main_window();
 
 private slots:
+    void stop_scanning();
     void delete_element(QTreeWidgetItem *deleted);
     void prepare_menu(const QPoint &pos);
     void select_directory();
@@ -38,6 +40,7 @@ private:
     void minuss();
     void try_to_show(std::function<void()>);
     void show_current();
+    scanner* scan;
     QThread* thread;
     QMap<QString, QVector<QString> >::iterator current;
     QMap<QString, QVector<QString> > data;
