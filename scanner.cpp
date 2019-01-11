@@ -1,5 +1,7 @@
 #include "scanner.h"
 #include <QString>
+//#include <QDebug>
+#include <iostream>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>

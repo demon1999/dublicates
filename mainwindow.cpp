@@ -26,18 +26,10 @@ main_window::main_window(QWidget *parent)
 {
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
-
-//    ui->StatusBar->setSizeIncrement(10, 0);
-//    ui->StatusBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//    ui->progressBar->setMaximumSize(ui->StatusBar->maximumWidth(), ui->StatusBar->maximumHeight());
-//    ui->progressBar->setSizeIncrement(10, 0);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-//    ui->progressBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     thread = new QThread;
-    //ui->progressBar->hide();
-    //ui->progressBar->setValue(30);
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &main_window::prepare_menu);
     QCommonStyle style;
     ui->actionScan_Directory->setIcon(style.standardIcon(QCommonStyle::SP_DialogOpenButton));
@@ -52,8 +44,7 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
-
-    scan_directory(QDir::homePath(), true);
+    scan_directory(QDir::homePath());
 }
 
 main_window::~main_window()
@@ -151,7 +142,7 @@ void main_window::select_directory()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    scan_directory(dir, true);
+    scan_directory(dir);
 }
 
 void main_window::stop_scanning() {
@@ -161,7 +152,7 @@ void main_window::stop_scanning() {
     ui->progressBar->hide();
 }
 
-void main_window::scan_directory(QString const& dir, bool is_first)
+void main_window::scan_directory(QString const& dir)
 {
     if (thread->isRunning()) {
         QMessageBox::information(0, "info", "You can't start new scanning, before previous one has finished.");

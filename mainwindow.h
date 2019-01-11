@@ -31,7 +31,7 @@ private slots:
     void select_directory();
     void show_next_dublicates();
     void show_prev_dublicates();
-    void scan_directory(QString const& dir, bool is_first);
+    void scan_directory(QString const& dir);
     void show_about_dialog();
     void show_percentage(int i);
     void make_window(const QMap<QString, QVector<QString> >  &_data,
