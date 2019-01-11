@@ -16,6 +16,9 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QThread>
+#include <QWidgetAction>
+#include <QProgressBar>
+#include <QSizePolicy>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent)
@@ -23,11 +26,18 @@ main_window::main_window(QWidget *parent)
 {
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
+
+//    ui->StatusBar->setSizeIncrement(10, 0);
+//    ui->StatusBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    ui->progressBar->setMaximumSize(ui->StatusBar->maximumWidth(), ui->StatusBar->maximumHeight());
+//    ui->progressBar->setSizeIncrement(10, 0);
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+//    ui->progressBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     thread = new QThread;
-    //connect(ui->treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(prepare_menu(const QPoint &)));
+    //ui->progressBar->hide();
+    //ui->progressBar->setValue(30);
     connect(ui->treeWidget, &QTreeWidget::customContextMenuRequested, this, &main_window::prepare_menu);
     QCommonStyle style;
     ui->actionScan_Directory->setIcon(style.standardIcon(QCommonStyle::SP_DialogOpenButton));
@@ -35,7 +45,7 @@ main_window::main_window(QWidget *parent)
     ui->actionNext_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowRight));
     ui->actionExit->setIcon(style.standardIcon(QCommonStyle::SP_DialogCloseButton));
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
-    //ui->actionStop->setIcon(style.standardIcon(QCommonStyle::SP_);
+
     connect(ui->actionStop, &QAction::triggered, this, &main_window::stop_scanning);
     connect(ui->actionPrev_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_prev_dublicates);
     connect(ui->actionNext_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_next_dublicates);
@@ -145,6 +155,7 @@ void main_window::stop_scanning() {
     if (scan == NULL)
         return;
     scan->set_flag();
+    ui->progressBar->hide();
 }
 
 void main_window::scan_directory(QString const& dir, bool is_first)
@@ -154,10 +165,13 @@ void main_window::scan_directory(QString const& dir, bool is_first)
         return;
     };
 
+    ui->progressBar->show();
+    ui->progressBar->setValue(0);
     QDir d(dir);
 
     scan = new scanner(dir);
     scan->moveToThread(thread);
+    connect(scan, SIGNAL(percentage(int)), this, SLOT(show_percentage(int)));
     connect(thread, SIGNAL(started()), scan, SLOT(run()));
     connect(scan, SIGNAL(finished()), thread, SLOT(quit()));
     //connect(this, SIGNAL(stopAll()), scan, SLOT(stop()));
@@ -170,9 +184,15 @@ void main_window::scan_directory(QString const& dir, bool is_first)
     thread->start();
 }
 
+void main_window::show_percentage(int k) {
+    ui->progressBar->setValue(k);
+    ui->progressBar->show();
+}
+
 void main_window::make_window(const QMap<QString, QVector<QString> >  &_data,
                               const QMap<QString, QString> &_sha256, const QString &_dir) {
     ui->treeWidget->clear();
+    ui->progressBar->hide();
     setWindowTitle(QString("Directory Content - %1").arg(_dir));
     data = _data;
     sha256 = _sha256;
