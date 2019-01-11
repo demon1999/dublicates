@@ -16,6 +16,7 @@ private:
     int number_of_files;
     int now_percentage;
     QString dir;
+    QMap<QString, bool> was;
     QMap<QString, QVector<QString> > data;
     QMap<QString, QString> sha256;
     void get_data(const QString &dir, bool type);

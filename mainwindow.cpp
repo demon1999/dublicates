@@ -53,7 +53,7 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
 
-    scan_directory(QString("/home/demon1999/code/cpp-course/dublicates/for_test"), true);
+    scan_directory(QDir::homePath(), true);
 }
 
 main_window::~main_window()
@@ -134,7 +134,10 @@ void main_window::minuss() {
 }
 
 void main_window::show_next_dublicates() {
-    pluss();
+    if (data.empty()) {
+        current = data.begin();
+    } else
+        pluss();
     try_to_show([this](){return this->pluss();});
 }
 

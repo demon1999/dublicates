@@ -17,11 +17,12 @@ void scanner::run() {
     data.clear();
     sha256.clear();
     get_data(dir, false);
+    was.clear();
     if (number_of_files == 0) {
         now_percentage = 100;
         emit percentage(100);
     }
-    //emit finished();
+    was.clear();
     if (flag == false)
         get_data(dir, true);
     if (flag == false)
@@ -31,6 +32,8 @@ void scanner::run() {
 
 void scanner::get_data(const QString &dir, bool type) {
     if (flag) return;
+    if (was[dir]) return;
+    was[dir] = true;
     QDir d(dir);
 
     QFileInfoList list = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
@@ -38,6 +41,9 @@ void scanner::get_data(const QString &dir, bool type) {
     for (QFileInfo file_info : list)
     {
         if (flag) return;
+        if (file_info.isSymLink()) {
+            get_data(file_info.absoluteFilePath(), type);
+        } else
         if (file_info.isDir()) {
             if (QDir(file_info.absoluteFilePath()).isReadable())
                 get_data(file_info.absoluteFilePath(), type);
