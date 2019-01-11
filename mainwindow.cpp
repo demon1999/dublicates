@@ -68,57 +68,51 @@ void main_window::prepare_menu(const QPoint & pos) {
 }
 
 void main_window::try_to_show(std::function<void()> change) {
-    if (data.empty()) {
-        current = data.begin();
-        show_current();
-        return;
-    }
-    auto& v = *current;
-    QVector<QString> new_arr(0);
-    for (auto path : v) {
-        if (QFile(path).exists())
-            new_arr.append(path);
-    }
-    v = new_arr;
-    if (v.size() > 1) {
-        show_current();
-    } else {
-        auto it = current;
-        it++;
-        if (it == data.end() && current == data.begin()) {
-            data.clear();
+    while (true) {
+        if (data.empty()) {
             current = data.begin();
-            show_current();
-            return;
+            break;
         }
-        it--;
-        change();
-        data.erase(it);
-        try_to_show(change);
+        auto& v = *current;
+        v.erase(std::remove_if(v.begin(), v.end(), [](const QString &path) {
+            return !QFile(path).exists();
+        }), v.end());
+        if (v.size() > 1) {
+            break;
+        } else {
+            auto it = current;
+            it++;
+            if (it == data.end() && current == data.begin()) {
+                data.clear();
+                current = data.begin();
+                break;
+            }
+            it--;
+            change();
+            data.erase(it);
+        }
     }
+    show_current();
 }
 
 void main_window::delete_element(QTreeWidgetItem *deleted) {
     QString path = deleted->text(0);
-    QString SHA256 = sha256[path];
     if (!QFile(path).exists()) {
         QMessageBox::information(0, "error", "File doesn't exist.");
     } else
-    if (QFile(path).remove()) {
-        sha256.erase(sha256.find(path));
-    } else {
+    if (!QFile(path).remove()) {
         QMessageBox::information(0, "error", "Can't be deleted.");
     }
-    try_to_show([this](){return this->pluss();});
+    try_to_show([this](){return this->increment();});
 }
 
-void main_window::pluss() {
+void main_window::increment() {
     current++;
     if (current == data.end())
         current = data.begin();
 }
 
-void main_window::minuss() {
+void main_window::decrement() {
     if (current == data.begin())
         current = data.end();
     current--;
@@ -128,14 +122,14 @@ void main_window::show_next_dublicates() {
     if (data.empty()) {
         current = data.begin();
     } else
-        pluss();
-    try_to_show([this](){return this->pluss();});
+        increment();
+    try_to_show([this](){return this->increment();});
 }
 
 void main_window::show_prev_dublicates() {
     if (data.empty()) return;
-    minuss();
-    try_to_show([this](){return this->minuss();});
+    decrement();
+    try_to_show([this](){return this->decrement();});
 }
 
 void main_window::select_directory()
@@ -168,13 +162,12 @@ void main_window::scan_directory(QString const& dir)
     connect(scan, SIGNAL(percentage(int)), this, SLOT(show_percentage(int)));
     connect(thread, SIGNAL(started()), scan, SLOT(run()));
     connect(scan, SIGNAL(finished()), thread, SLOT(quit()));
-    //connect(this, SIGNAL(stopAll()), scan, SLOT(stop()));
+
     qRegisterMetaType<QMap<QString, QVector<QString> > >("QMap<QString, QVector<QString> >");
     qRegisterMetaType<QMap<QString, QString> >("QMap<QString, QString>");
     connect(scan, SIGNAL(done(const QMap<QString, QVector<QString> > &,
-                              const QMap<QString, QString> &,
                               const QString&)), this,
-                  SLOT(make_window(const QMap<QString, QVector<QString> > &, const QMap<QString, QString> &, const QString&)));
+                  SLOT(make_window(const QMap<QString, QVector<QString> > &, const QString&)));
     thread->start();
 }
 
@@ -183,15 +176,13 @@ void main_window::show_percentage(int k) {
     ui->progressBar->show();
 }
 
-void main_window::make_window(const QMap<QString, QVector<QString> >  &_data,
-                              const QMap<QString, QString> &_sha256, const QString &_dir) {
+void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, const QString &_dir) {
     ui->treeWidget->clear();
     ui->progressBar->hide();
     setWindowTitle(QString("Directory Content - %1").arg(_dir));
     data = _data;
-    sha256 = _sha256;
     current = data.begin();
-    try_to_show([this](){return this->pluss();});
+    try_to_show([this](){return this->increment();});
 }
 void main_window::show_current() {
     QString title = QWidget::windowTitle();

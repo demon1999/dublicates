@@ -34,18 +34,16 @@ private slots:
     void scan_directory(QString const& dir);
     void show_about_dialog();
     void show_percentage(int i);
-    void make_window(const QMap<QString, QVector<QString> >  &_data,
-                     const QMap<QString, QString> &_sha256, const QString &_dir);
+    void make_window(const QMap<QString, QVector<QString> >  &_data, const QString &_dir);
 private:
-    void pluss();
-    void minuss();
+    void increment();
+    void decrement();
     void try_to_show(std::function<void()>);
     void show_current();
     scanner* scan;
     QThread* thread;
     QMap<QString, QVector<QString> >::iterator current;
     QMap<QString, QVector<QString> > data;
-    QMap<QString, QString> sha256;
     std::unique_ptr<Ui::MainWindow> ui;
 };
 
