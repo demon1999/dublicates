@@ -39,6 +39,7 @@ private slots:
 private:
     void increment();
     void decrement();
+    void delete_selected();
     void try_to_show(std::function<void()>);
     void show_current();
     QProgressBar* progressBar;

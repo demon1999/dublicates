@@ -42,7 +42,8 @@ main_window::main_window(QWidget *parent)
     ui->actionNext_Group_Of_Dublicates->setIcon(style.standardIcon(QCommonStyle::SP_ArrowRight));
     ui->actionExit->setIcon(style.standardIcon(QCommonStyle::SP_DialogCloseButton));
     ui->actionAbout->setIcon(style.standardIcon(QCommonStyle::SP_DialogHelpButton));
-
+    ui->treeWidget->setSelectionMode(QAbstractItemView::MultiSelection);
+    connect(ui->actionDeleteSelected,&QAction::triggered,this, &main_window::delete_selected);
     connect(ui->actionStop, &QAction::triggered, this, &main_window::stop_scanning);
     connect(ui->actionPrev_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_prev_dublicates);
     connect(ui->actionNext_Group_Of_Dublicates, &QAction::triggered, this, &main_window::show_next_dublicates);
@@ -55,6 +56,13 @@ main_window::main_window(QWidget *parent)
 main_window::~main_window()
 {}
 
+void main_window::delete_selected() {
+    QList<QTreeWidgetItem*> sel_items = ui->treeWidget->selectedItems();
+    for(int i=0; i<sel_items.size(); i++){
+        QFile(sel_items[i]->text(0)).remove();
+    }
+    try_to_show([this](){return this->increment();});
+}
 void main_window::prepare_menu(const QPoint & pos) {
     QTreeWidget *tree = ui->treeWidget;
 
@@ -183,8 +191,12 @@ void main_window::show_percentage(int k) {
 
 void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, const QString &_dir) {
     ui->treeWidget->clear();
+
     progressBar->hide();
     setWindowTitle(QString("Directory Content - %1").arg(_dir));
+    int cnt = 0;
+    for (auto v : _data)
+        cnt += v.size();
     data = _data;
     current = data.begin();
     try_to_show([this](){return this->increment();});
