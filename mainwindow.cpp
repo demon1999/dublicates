@@ -23,8 +23,13 @@
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-{
+{    
     ui->setupUi(this);
+    progressBar = new QProgressBar(ui->StatusBar);
+    ui->StatusBar->addPermanentWidget(progressBar);
+    progressBar->hide();
+    progressBar->setAlignment(Qt::AlignRight);
+    progressBar->setMinimumSize(210, 30);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -44,7 +49,7 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
-    scan_directory(QDir::homePath());
+
 }
 
 main_window::~main_window()
@@ -98,10 +103,10 @@ void main_window::try_to_show(std::function<void()> change) {
 void main_window::delete_element(QTreeWidgetItem *deleted) {
     QString path = deleted->text(0);
     if (!QFile(path).exists()) {
-        QMessageBox::information(0, "error", "File doesn't exist.");
+        QMessageBox::information(nullptr, "error", "File doesn't exist.");
     } else
     if (!QFile(path).remove()) {
-        QMessageBox::information(0, "error", "Can't be deleted.");
+        QMessageBox::information(nullptr, "error", "Can't be deleted.");
     }
     try_to_show([this](){return this->increment();});
 }
@@ -140,21 +145,21 @@ void main_window::select_directory()
 }
 
 void main_window::stop_scanning() {
-    if (scan == NULL)
+    if (scan == nullptr)
         return;
     scan->set_flag();
-    ui->progressBar->hide();
+    progressBar->hide();
 }
 
 void main_window::scan_directory(QString const& dir)
 {
     if (thread->isRunning()) {
-        QMessageBox::information(0, "info", "You can't start new scanning, before previous one has finished.");
+        QMessageBox::information(nullptr, "info", "You can't start new scanning, before previous one has finished.");
         return;
     };
 
-    ui->progressBar->show();
-    ui->progressBar->setValue(0);
+    progressBar->show();
+    progressBar->setValue(0);
     QDir d(dir);
 
     scan = new scanner(dir);
@@ -172,13 +177,13 @@ void main_window::scan_directory(QString const& dir)
 }
 
 void main_window::show_percentage(int k) {
-    ui->progressBar->setValue(k);
-    ui->progressBar->show();
+    progressBar->setValue(k);
+    progressBar->show();
 }
 
 void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, const QString &_dir) {
     ui->treeWidget->clear();
-    ui->progressBar->hide();
+    progressBar->hide();
     setWindowTitle(QString("Directory Content - %1").arg(_dir));
     data = _data;
     current = data.begin();

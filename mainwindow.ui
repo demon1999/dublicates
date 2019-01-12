@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>27</height>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -75,9 +75,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="StatusBar">
-   <widget class="QProgressBar" name="progressBar">
-   </widget>
+  <widget class="QStatusBar" name="StatusBar">   
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">

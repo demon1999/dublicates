@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTreeWidgetItem>
 #include <QMap>
+#include <QProgressBar>
 #include <QThread>
 #include <QString>
 #include <QVector>
@@ -40,6 +41,7 @@ private:
     void decrement();
     void try_to_show(std::function<void()>);
     void show_current();
+    QProgressBar* progressBar;
     scanner* scan;
     QThread* thread;
     QMap<QString, QVector<QString> >::iterator current;

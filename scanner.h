@@ -5,20 +5,24 @@
 #include <QVector>
 #include <QObject>
 #include <functional>
+#include <atomic>
 
 class scanner : public QObject
 {
         Q_OBJECT
 
 private:
-    volatile bool aborted_flag;
+    std::atomic<bool> aborted_flag;
     int counter;
     int number_of_files;
     int now_percentage;
     QString dir;
+    QMap<int, QVector<QString> > names;
     QMap<QString, bool> was;
     QMap<QString, QVector<QString> > data;
-    void get_data(const QString &dir, bool load_files);
+    void get_data(const QString &dir);
+    void load_data();
+    void change_percentage();
 public:
     scanner(const QString &dir_name);
     void set_flag();
