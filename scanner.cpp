@@ -70,7 +70,6 @@ void scanner::load_data() {
                     break;
                 }
                 get += k;
-                cnt -= k;
             }
             if (get < std::min(min_count, file.size())) {
                 change_percentage();
