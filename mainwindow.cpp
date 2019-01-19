@@ -204,9 +204,11 @@ void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, co
 void main_window::show_current() {
     QString title = QWidget::windowTitle();
     ui->treeWidget->clear();
+    ui->treeWidget->hide();
     setWindowTitle(title);
 
     if (current == data.end()) {
+        ui->treeWidget->show();
         return;
     }
     auto v = *current;
@@ -216,6 +218,8 @@ void main_window::show_current() {
         item->setText(1, QString::number(QFile(eq_files).size()));
         ui->treeWidget->addTopLevelItem(item);
     }
+
+    ui->treeWidget->show();
 }
 
 void main_window::show_about_dialog()
