@@ -129,7 +129,7 @@ void scanner::get_data(const QString &dir) {
     {
         if (aborted_flag) return;
         if (file_info.isSymLink()) {
-            get_data(file_info.absolutePath());
+            get_data(file_info.canonicalPath());
         } else
         if (file_info.isDir()) {
             if (QDir(file_info.absoluteFilePath()).isReadable())
