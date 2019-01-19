@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "scanner.h"
 
+#include <QLabel>
 #include <QMap>
 #include <QVector>
 #include <QString>
@@ -26,7 +27,10 @@ main_window::main_window(QWidget *parent)
 {    
     ui->setupUi(this);
     progressBar = new QProgressBar(ui->StatusBar);
+    label = new QLabel;
+    ui->StatusBar->addPermanentWidget(label);
     ui->StatusBar->addPermanentWidget(progressBar);
+
     progressBar->hide();
     progressBar->setAlignment(Qt::AlignRight);
     progressBar->setMinimumSize(210, 30);
@@ -147,6 +151,7 @@ void main_window::show_prev_dublicates() {
 
 void main_window::select_directory()
 {
+    label->hide();
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     scan_directory(dir);
@@ -191,7 +196,12 @@ void main_window::show_percentage(int k) {
 
 void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, const QString &_dir) {
     ui->treeWidget->clear();
-
+    int k = 0;
+    for (auto v : _data)
+        k += v.size();
+    label->hide();
+    label->setText("Number of dublicates: " + QString::number(k));
+    label->show();
     progressBar->hide();
     setWindowTitle(QString("Directory Content - %1").arg(_dir));
     int cnt = 0;

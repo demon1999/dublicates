@@ -12,6 +12,7 @@
 scanner::scanner(const QString &dir_name) {
     dir = dir_name;
     aborted_flag = false;
+    data.clear();
     number_of_files = counter = 0;
     now_percentage = 0;
 }
