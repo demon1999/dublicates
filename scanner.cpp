@@ -19,6 +19,7 @@ scanner::scanner(const QString &dir_name) {
 
 void scanner::run() {
     data.clear();
+    std::cout << dir.toStdString() << "\n";
     get_data(dir);
     was.clear();
     if (number_of_files == 0) {
@@ -66,12 +67,16 @@ void scanner::load_data() {
             qint64 cnt = std::min(min_count, file.size());
             qint64 get = 0;
             while (get < cnt) {
+                if (aborted_flag == true) {
+                    break;
+                }
                 qint64 k = file.read(s + get, cnt);
                 if (k == -1 || k == 0) {
                     break;
                 }
                 get += k;
             }
+            if (aborted_flag == true) break;
             if (get < std::min(min_count, file.size())) {
                 change_percentage();
                 continue;
@@ -122,7 +127,6 @@ void scanner::get_data(const QString &dir) {
     QDir d(dir);
     if (was[d.canonicalPath()]) return;
     was[d.canonicalPath()] = true;
-
 
     QFileInfoList list = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
 

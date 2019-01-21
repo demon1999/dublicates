@@ -175,6 +175,7 @@ void main_window::scan_directory(QString const& dir)
     progressBar->setValue(0);
     QDir d(dir);
 
+    thread = new QThread;
     scan = new scanner(dir);
     scan->moveToThread(thread);
     connect(scan, SIGNAL(percentage(int)), this, SLOT(show_percentage(int)));
