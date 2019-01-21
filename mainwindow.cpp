@@ -174,7 +174,7 @@ void main_window::scan_directory(QString const& dir)
     progressBar->show();
     progressBar->setValue(0);
     QDir d(dir);
-
+    thread->quit();
     thread = new QThread;
     scan = new scanner(dir);
     scan->moveToThread(thread);
