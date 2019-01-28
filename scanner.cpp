@@ -57,7 +57,7 @@ void scanner::load_data() {
         QVector<QPair<QByteArray, QString> > first_bytes;
         for (auto path : v) {
             if (aborted_flag == true) break;
-            char s[min_count];
+            char s[min_count + 1];
             QFile file(path);
             if(!file.open(QIODevice::ReadOnly)) {
                 //ignore bad files
@@ -70,7 +70,7 @@ void scanner::load_data() {
                 if (aborted_flag == true) {
                     break;
                 }
-                qint64 k = file.read(s + get, cnt);
+                qint64 k = file.read(s + get, cnt - get);
                 if (k == -1 || k == 0) {
                     break;
                 }
@@ -92,7 +92,7 @@ void scanner::load_data() {
             }
         }
         QVector<QPair<QString, QString> > sha256;
-        for (auto path : v) {
+        for (auto path : good_paths) {
             if (aborted_flag == true)
                 break;
             QCryptographicHash hs(QCryptographicHash::Algorithm::Sha256);
