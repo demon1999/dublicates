@@ -212,6 +212,7 @@ void main_window::make_window(const QMap<QString, QVector<QString> >  &_data, co
     current = data.begin();
     try_to_show([this](){return this->increment();});
 }
+
 void main_window::show_current() {
     QString title = QWidget::windowTitle();
     ui->treeWidget->clear();

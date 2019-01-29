@@ -19,7 +19,7 @@ scanner::scanner(const QString &dir_name) {
 
 void scanner::run() {
     data.clear();
-    std::cout << dir.toStdString() << "\n";
+    //std::cout << dir.toStdString() << "\n";
     get_data(dir);
     was.clear();
     if (number_of_files == 0) {
@@ -134,7 +134,7 @@ void scanner::get_data(const QString &dir) {
     {
         if (aborted_flag) return;
         if (file_info.isSymLink()) {
-            get_data(file_info.canonicalPath());
+            get_data(file_info.canonicalFilePath());
         } else
         if (file_info.isDir()) {
             if (QDir(file_info.absoluteFilePath()).isReadable())
